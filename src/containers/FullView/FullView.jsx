@@ -6,8 +6,10 @@ import ControlBtn from '../../UI/ControlBtn/ControlBtn';
 
 class FullView extends Component {
     state = {
-        loadedProduct: null
+        loadedProduct: null,
+        loadedTotalPrice: null
     }
+
     componentDidMount() {
         if (this.props.match.params.productId) {
             if (!this.state.loadedProduct || (this.state.loadedProduct && this.state.loadedProduct.id !== this.props.id)) {
@@ -15,9 +17,63 @@ class FullView extends Component {
                     .then(response => {
                         this.setState({ loadedProduct: response.data });
                     })
+                axios.get('/totalPrice.json')
+                    .then(response => {
+                        this.setState({ loadedTotalPrice: response.data });
+                    })
             }
         }
-        console.log(this.props);
+    }
+
+    componentDidUpdate() {
+        if (this.state.loadedProduct) {
+            axios.put('/products/' + this.state.loadedProduct.id + '.json', this.state.loadedProduct)
+            axios.put('/totalPrice.json', this.state.loadedTotalPrice)
+        }
+    }
+
+    addProductHandler = () => {
+        const oldCount = this.state.loadedProduct.amount;
+        const updateCount = oldCount + 1;
+        const updatedProduct = {
+            ...this.state.loadedProduct
+        }
+        updatedProduct.amount = updateCount;
+
+        const priceAddition = this.state.loadedProduct.price;
+        const oldPrice = this.state.loadedTotalPrice;
+        const newPrice = oldPrice + priceAddition;
+
+        this.setState({
+            loadedProduct: updatedProduct,
+            loadedTotalPrice: newPrice
+        })
+    }
+
+    removeProductHandler = () => {
+        const oldCount = this.state.loadedProduct.amount;
+
+        if (oldCount <= 0) {
+            return;
+        }
+        const updateCount = oldCount - 1;
+        const updatedProduct = {
+            ...this.state.loadedProduct
+        }
+        updatedProduct.amount = updateCount;
+
+        const priceAddition = this.state.loadedProduct.price;
+        const oldPrice = this.state.loadedTotalPrice;
+        const newPrice = oldPrice - priceAddition;
+
+        this.setState({
+            loadedProduct: updatedProduct,
+            loadedTotalPrice: newPrice
+        })
+    }
+
+    backHandler = () => {
+        this.props.history.push({ pathname: '/' })
     }
 
     render() {
@@ -26,6 +82,10 @@ class FullView extends Component {
         if (this.state.loadedProduct) {
             productView = (
                 <div>
+
+                    <button onClick={this.backHandler}>Back</button>
+
+                    <h3>Product Details</h3>
                     <ReactBootstrap.Table striped bordered hover>
                         <tr>
                             <td>ID</td>
@@ -43,10 +103,14 @@ class FullView extends Component {
                             <td>Weight</td>
                             <td>{this.state.loadedProduct.weight} lbs</td>
                         </tr>
+                        <tr>
+                            <td>Amount</td>
+                            <td>{this.state.loadedProduct.amount}</td>
+                        </tr>
                     </ReactBootstrap.Table>
-                    <ControlBtn click={this.props.removeProduct} >-</ControlBtn>
-                    <ControlBtn click={this.props.addProduct} >+</ControlBtn>
-                    <p>Amount : {this.state.loadedProduct.amount}</p>
+                    <ControlBtn click={this.removeProductHandler} >Less</ControlBtn>
+                    <ControlBtn click={this.addProductHandler} >Add</ControlBtn>
+
                 </div>
             )
         }

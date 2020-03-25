@@ -4,8 +4,8 @@ import priceWithCommas from '../../functions/priceWithCommas'
 import * as ReactBootstrap from 'react-bootstrap'
 
 const Products = (props) => {
-    
-    const transformProducts = Object.keys(props.products).map(pdKey => {   
+
+    const transformProducts = Object.keys(props.products).map(pdKey => {
         return [...Array(props.products[pdKey])].map((product, i) => {
             return (<tr>
                 <Product
@@ -17,7 +17,7 @@ const Products = (props) => {
                     amount={product.amount}
                     addProduct={() => props.addProduct(product.id)}
                     removeProduct={() => props.removeProduct(product.id)}
-                    productView={()=> props.clickedView(product.id)}
+                    productView={() => props.clickedView(product.id)}
                 />
             </tr>)
         })
@@ -25,6 +25,7 @@ const Products = (props) => {
 
     return (
         <Fragment>
+            <h3>Products</h3>
             <ReactBootstrap.Table striped bordered hover>
                 <thead>
                     <th>ID</th>
@@ -33,11 +34,13 @@ const Products = (props) => {
                     <th>Price</th>
                     <th>Detail</th>
                     <th>Add/Remove</th>
-                    <th>Amount</th>
+                    <th>Qty</th>
                 </thead>
                 {transformProducts}
             </ReactBootstrap.Table>
-            <button>
+            
+            <button
+                onClick={props.purchasing}>
                 Checkout
             </button>
             <p>Total Price : ฿ {priceWithCommas(props.totalPrice)}</p>
